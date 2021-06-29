@@ -1,24 +1,25 @@
+; GUARDAR UNA CADENA EN UN VARIABLE Y ESCRIBIRLA EN LA CONSOLA DE MS-DOS
 ; MAIN
 	org 	100h
 
 	section	.text
 
-        mov DI, 0       ;Contador
-
-	; input password
+	; input frase
 	mov 	BP, pass
 	call  	LeerCadena
-	call	EsperarTecla
+
+        call    CompararCadenas;
+        call    EscribirCadena;
 
 	int 	20h
 
+
 	section	.data
 
-msgc	db	"BIENVENIDO/A", "$"
-msgi 	db 	"INCORRECTO", "$"
-pass 	times 	5  	db	" "
-key     db      "rooot"
-len     equ     $-key
+        msgc	db	"BIENVENIDO", "$"
+        msgi 	db 	"INCORRECTO", "$"
+        pass 	times 	6  	db	" " 
+        key     db      "12345","$"	
 
 ; FUNCIONES
 
@@ -38,20 +39,16 @@ LeerCadena:
 while:  
         call    EsperarTecla    ; retorna un caracter en AL
         cmp     AL, 0x0D        ; comparar AL con caracter EnterKey
-        je      validar            ; si AL == EnterKey, saltar a exit
-        cmp     AL, [key + SI]
-        je      CaracteresIguales
+        je      exit            ; si AL == EnterKey, saltar a exit
+        mov     [BP+SI], AL   	; guardar caracter en memoria
         inc     SI              ; SI++
         jmp     while           ; saltar a while
-validar:
-        cmp     DI, len
-        je      EsCorrecta
-        mov     DX, msgi
-        jmp     EscribirCadena    
+exit:
+	mov 	byte [BP+SI], "$"	; agregar $ al final de la cadena
+        xor     SI,SI
+        xor     DI,DI
+        ret
 
-EsCorrecta:
-        mov     DX, msgc
-        jmp     EscribirCadena
 
 ; Permite escribir en la salida estándar una cadena de caracteres o string, este
 ; debe tener como terminación el carácter “$”
@@ -61,7 +58,19 @@ EscribirCadena:
 	int 	21h
 	ret
 
-CaracteresIguales:
-        inc     DI
-        inc     SI
-        jmp     while
+CompararCadenas:
+        cmp     SI, 5
+        JE      EsCorrecta
+        mov     AL, [key + SI]
+        cmp     [BP + SI], AL
+        JNE     EsIncorrecta
+        INC SI
+        jmp CompararCadenas
+
+EsIncorrecta:
+        mov DX, msgi
+        ret
+
+EsCorrecta:
+        mov DX, msgc
+        ret
