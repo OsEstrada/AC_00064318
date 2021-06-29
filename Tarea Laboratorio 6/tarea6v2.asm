@@ -58,7 +58,7 @@ EscribirCadena:
 	int 	21h
 	ret
 
-CompararCadenas:
+Validar:
         cmp     SI, 5
         JE      EsCorrecta
         mov     AL, [key + SI]
